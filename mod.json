@@ -1,0 +1,20 @@
+{
+	"geode": "3.8.1",
+	"gd": {
+		"win": "2.206",
+		"android": "2.206",
+		"mac": "2.206",
+		"ios": "2.206"
+	},
+	"id": "user95401.mod_downloader",
+	"name": "Mod Downloader",
+	"version": "v1.0.0",
+	"developer": "user95401",
+	"description": "Small toll for devs to download and install mod in game",
+	"tags": [ "online", "developer", "enhancement" ],
+	"links": {
+		"community": "https://discord.gg/6SxAbk3bTA",
+		"homepage": "https://t.me/user95401_channel",
+		"source": "https://github.com/user95401/Mod-Downloader"
+	}
+}
