@@ -11,6 +11,7 @@ class $modify(ModsLayerExt, CCLayer) {
 		if (typeinfo_cast<ModsLayer*>(this)) queueInMainThread(
 			[this] {
 				if (auto search_input = typeinfo_cast<TextInput*>(getChildByIDRecursive("search-input"))) {
+					search_input->setCommonFilter(CommonFilter::Any);
 					auto org_callback = public_cast(search_input, m_onInput);
 					search_input->setCallback(
 						[org_callback](std::string str) {
