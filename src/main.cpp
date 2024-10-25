@@ -1,5 +1,5 @@
 ﻿#include <_main.hpp>
-#include <Geode/utils/web.hpp>
+#include <_updater.hpp>
 
 class ModsLayer : public CCNode {};
 
