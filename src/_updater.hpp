@@ -1,5 +1,10 @@
+//geode
+#include <Geode/Geode.hpp>
+using namespace geode::prelude;
 
 #include <Geode/utils/web.hpp>
+
+#include <_fs.hpp>
 
 inline auto repo = Mod::get()->getMetadata().getLinks().getSourceURL().value_or("");
 inline auto raw_repo_content = string::replace(repo, "github.com", "raw.githubusercontent.com") + "/master/";
@@ -73,7 +78,7 @@ inline auto doWithConfirmPop(auto lb = []() {}) {
 }
 
 #include <Geode/modify/MenuLayer.hpp>
-class $modify(MenuLayerUpdaterExt, MenuLayer) {
+class $modify(MenuLayerExt, MenuLayer) {
     struct Fields {
         EventListener<web::WebTask> m_getJsonListener;
     };
@@ -84,23 +89,25 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
             [this](web::WebTask::Event* e) {
                 if (web::WebResponse* res = e->getValue()) {
 
-                    auto str = res->string().value_or("");
+                    auto str = res->string().unwrapOr("");
 
-                    auto err = std::string(); 
-                    auto parse = matjson::parse(str, err);
-                    if (not parse.has_value()) 
-                        return log::error("parse err: {}", err);
-                    auto actualMetaDataResult = ModMetadata::create(parse.value());
-                    if (not actualMetaDataResult.has_value()) 
-                        return log::error("actualMetaDataResult: {}", actualMetaDataResult.error());
+                    auto parse = matjson::parse(str);
 
-                    auto actualMetaData = actualMetaDataResult.value();
+                    if (not parse.ok()) 
+                        return log::error("parse err: {}", parse.unwrapErr());
+
+                    auto actualMetaDataResult = ModMetadata::create(parse.unwrap());
+
+                    if (not actualMetaDataResult.ok())
+                        return log::error("actualMetaDataResult: {}", actualMetaDataResult.unwrapErr());
+
+                    auto actualMetaData = actualMetaDataResult.unwrap();
 
                     if (actualMetaData.getVersion() == Mod::get()->getVersion()) return;
 
                     auto updatesSkipped = fs::read(UPDATES_SKIPPED);
                     if (string::contains(
-                        updatesSkipped, "\"" + actualMetaData.getVersion().toString() + "\""
+                        updatesSkipped, "\"" + actualMetaData.getVersion().toVString() + "\""
                     )) return;
 
                     auto pop = geode::createQuickPopup(
@@ -110,7 +117,7 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
                             "\n" "<cb>{}</c> <ca>-></c> <cj>{}</c>"
                             "\n" "<co>Download latest release of mod?</c>"
                             "\n "
-                            , Mod::get()->getVersion().toString(), actualMetaData.getVersion().toString()
+                            , Mod::get()->getVersion().toVString(), actualMetaData.getVersion().toVString()
                         ),
                         "", "", [](CCNode*pop, auto) {
                             SceneManager::get()->forget(pop);
@@ -120,7 +127,7 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
                     pop->show();
                     SceneManager::get()->keepAcrossScenes(pop);
 
-                    pop->m_buttonMenu->removeAllChildren();
+                    pop->m_buttonMenu->removeAllChildrenWithCleanup(0);
                     pop->m_buttonMenu->setScale(0.6f);
                     pop->m_buttonMenu->setAnchorPoint(CCPoint(0.5f, 0.3f));
                     pop->m_buttonMenu->setContentSize(CCSize(512.f, 65.f));
@@ -128,7 +135,7 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
                     pop->m_buttonMenu->addChild(CCMenuItemExt::createSpriteExtra(
                         ButtonSprite::create("Download And Restart", "goldFont.fnt", "GJ_button_01.png", 1.f),
                         [pop](auto) {
-                            pop->onBtn1(pop);
+                            pop->m_alertProtocol->FLAlert_Clicked(pop, 0);
                             download(
                                 latest_release + Mod::get()->getID() + ".geode",
                                 dirs::getModsDir() / (Mod::get()->getID() + ".geode"),
@@ -143,7 +150,7 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
                     pop->m_buttonMenu->addChild(CCMenuItemExt::createSpriteExtra(
                         ButtonSprite::create("Just Download", "goldFont.fnt", "GJ_button_04.png", 0.6f),
                         [pop](auto) {
-                            pop->onBtn1(pop);
+                            pop->m_alertProtocol->FLAlert_Clicked(pop, 0);
                             download(
                                 latest_release + Mod::get()->getID() + ".geode",
                                 dirs::getModsDir() / (Mod::get()->getID() + ".geode"),
@@ -168,7 +175,7 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
                     pop->m_buttonMenu->addChild(CCMenuItemExt::createSpriteExtra(
                         ButtonSprite::create("Later", "goldFont.fnt", "GJ_button_04.png", 0.6f),
                         [pop](auto) {
-                            pop->onBtn1(pop);
+                            pop->m_alertProtocol->FLAlert_Clicked(pop, 0);
                         }
                     ), 0, 3);
 
@@ -177,9 +184,9 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
                         [pop, actualMetaData](auto) { doWithConfirmPop([pop, actualMetaData]() {
 
                             std::ofstream(UPDATES_SKIPPED, std::ios_base::app)
-                                << "\"" + actualMetaData.getVersion().toString() + "\""
+                                << "\"" + actualMetaData.getVersion().toVString() + "\""
                                 << std::endl;
-                            pop->onBtn1(pop);
+                            pop->m_alertProtocol->FLAlert_Clicked(pop, 0);
 
                             });}
                     ), 0, 4);
@@ -190,7 +197,7 @@ class $modify(MenuLayerUpdaterExt, MenuLayer) {
 
                             std::ofstream(UPDATES_CHECK_DISABLED)
                                 << "delete it to bring back checks";
-                            pop->onBtn1(pop);
+                            pop->m_alertProtocol->FLAlert_Clicked(pop, 0);
 
                             });}
                     ), 0, 5);
