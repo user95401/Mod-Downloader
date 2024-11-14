@@ -1,10 +1,9 @@
+#include <_main.hpp>
 //geode
 #include <Geode/Geode.hpp>
 using namespace geode::prelude;
 
 #include <Geode/utils/web.hpp>
-
-#include <_fs.hpp>
 
 inline auto repo = Mod::get()->getMetadata().getLinks().getSourceURL().value_or("");
 inline auto raw_repo_content = string::replace(repo, "github.com", "raw.githubusercontent.com") + "/master/";
