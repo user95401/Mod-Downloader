@@ -8,7 +8,7 @@
 	},
 	"id": "user95401.mod_downloader",
 	"name": "Mod Downloader",
-	"version": "v1.0.0",
+	"version": "v1.1.0",
 	"developer": "user95401",
 	"description": "Small toll for devs to download and install mod in game",
 	"tags": [ "online", "developer", "enhancement" ],
